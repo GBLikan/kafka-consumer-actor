@@ -10,6 +10,6 @@ object ReflexKafkaDisplayActor {
 class ReflexKafkaDisplayActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
-    case r: ConsumerRecord[String, String] => log.info(s"Message reçu : ${r.value()}")
+    case r: ConsumerRecord[String, String] => log.info(s"Message lu : ${r.value()}")
   }
 }

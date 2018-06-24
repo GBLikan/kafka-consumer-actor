@@ -11,6 +11,9 @@ object ReflexKafkaFilterActor {
 class ReflexKafkaFilterActor(filterFunction: ConsumerRecord[String, String] => Boolean, processorActor: ActorRef) extends Actor with ActorLogging {
 
   override def receive: Receive = {
-    case r: ConsumerRecord[String, String] => if (filterFunction(r)) processorActor ! r else log.debug(s"Message ${r.value()} discarded")
+    case r: ConsumerRecord[String, String] =>
+      log.info("Someone told me to filter !")
+      if (filterFunction(r)) processorActor ! r else log.debug(s"Message ${r.value()} discarded")
+      log.info("Done filtering for now.")
   }
 }
