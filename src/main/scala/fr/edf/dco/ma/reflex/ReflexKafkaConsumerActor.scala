@@ -3,7 +3,7 @@ package fr.edf.dco.ma.reflex
 import java.util
 import java.util.Properties
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props, Stash}
+import akka.actor.{Actor, ActorLogging, ActorRef, PoisonPill, Props}
 import org.apache.kafka.clients.consumer.{ConsumerRecords, KafkaConsumer}
 
 object ReflexKafkaConsumerActor {
@@ -32,12 +32,11 @@ class ReflexKafkaConsumerActor(topic: String, kafkaConfig: Properties, filterAct
   }
 
   //TODO: Cette approche ultra-simple ne survivra pas à plusieurs instances de l'acteur, et à autre chose que l'auto.commit.
-  //TODO:
   def receive = {
     case PleasePoll => {
       log.info("Someone told me to poll !")
       //On prend le prochain groupe de messages et on l'envoie.
-      val records: ConsumerRecords[String, String] = kafkaConsumer.poll(1000)
+      val records: ConsumerRecords[String, String] = kafkaConsumer.poll(250)
       val it = records.iterator()
       while (it.hasNext) {
         log.info("Found something to send !")
@@ -46,9 +45,10 @@ class ReflexKafkaConsumerActor(topic: String, kafkaConfig: Properties, filterAct
       log.info("Done polling for now.")
     }
     case StopWorking => {
-      kafkaConsumer.unsubscribe()
+      kafkaConsumer.unsubscribe
       kafkaConsumer.close
       log.info("Someone told me to shutdown !")
+      self ! PoisonPill
     }
   }
 }
