@@ -3,8 +3,7 @@ package fr.edf.dco.ma.reflex
 import java.util
 import java.util.Properties
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import com.typesafe.config.Config
+import akka.actor.{Actor, ActorLogging, ActorRef, Props, Stash}
 import org.apache.kafka.clients.consumer.{ConsumerRecords, KafkaConsumer}
 
 object ReflexKafkaConsumerActor {
@@ -15,7 +14,7 @@ object ReflexKafkaConsumerActor {
 
   case object StopWorking
 
-  case object Initialize
+  case object InitializationDone
 
 }
 
@@ -23,21 +22,22 @@ class ReflexKafkaConsumerActor(topic: String, kafkaConfig: Properties, filterAct
 
   import ReflexKafkaConsumerActor._
 
-  //Instanciation du consumer et souscription
   var kafkaConsumer: KafkaConsumer[String, String] = _
 
-  //TODO: Implémenter la gestion fine de l'offset.
+  override def preStart(): Unit = {
+    super.preStart
+    //Instanciation du consumer et souscription
+    kafkaConsumer = new KafkaConsumer[String, String](kafkaConfig)
+    kafkaConsumer.subscribe(util.Arrays.asList(topic))
+  }
+
+  //TODO: Cette approche ultra-simple ne survivra pas à plusieurs instances de l'acteur, et à autre chose que l'auto.commit.
+  //TODO:
   def receive = {
-    case Initialize => {
-      log.info("Someone told me to initialize !")
-      kafkaConsumer = new KafkaConsumer[String, String](kafkaConfig)
-      kafkaConsumer.subscribe(util.Arrays.asList(topic))
-      log.info("Done initializing.")
-    }
     case PleasePoll => {
       log.info("Someone told me to poll !")
       //On prend le prochain groupe de messages et on l'envoie.
-      val records: ConsumerRecords[String, String] = kafkaConsumer.poll(250)
+      val records: ConsumerRecords[String, String] = kafkaConsumer.poll(1000)
       val it = records.iterator()
       while (it.hasNext) {
         log.info("Found something to send !")

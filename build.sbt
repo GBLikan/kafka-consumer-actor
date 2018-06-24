@@ -4,6 +4,8 @@ version := "1.0"
 
 scalaVersion := "2.11.12"
 
+resolvers += Resolver.bintrayRepo("cakesolutions", "maven")
+
 lazy val kafkaVersion = "0.10.0.0"
 lazy val akkaVersion = "2.5.13"
 
