@@ -4,7 +4,6 @@ import java.util.Properties
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
-import com.typesafe.config.{Config, ConfigFactory}
 import fr.edf.dco.ma.reflex.ReflexKafkaConsumerActor.{PleasePoll, StopWorking}
 import info.batey.kafka.unit.KafkaUnit
 import org.apache.kafka.clients.consumer.{ConsumerConfig, ConsumerRecord, OffsetResetStrategy}
@@ -27,15 +26,6 @@ class ReflexConsumerSpec(_system: ActorSystem) extends TestKit(_system) with Imp
   val kafkaServer = new KafkaUnit(2181, 9092)
 
   def randomString: String = Random.alphanumeric.take(5).mkString("")
-
-
-  val config: Config = ConfigFactory.parseString(
-    s"""
-       | bootstrap.servers = "localhost:${kafkaServer.getKafkaConnect}",
-       | auto.offset.reset = "earliest",
-       | group.id = "$randomString"
-        """.stripMargin
-  )
 
   override def beforeAll() = {
     kafkaServer.startup()
