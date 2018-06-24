@@ -87,7 +87,7 @@ class ReflexConsumerSpec(_system: ActorSystem) extends TestKit(_system) with Imp
 
       consumer ! PleasePoll
 
-      submitMsg(3, "test", "Hello World !")
+      submitMsg(1, "test", "Hello World !")
 
       consumer ! PleasePoll
 
